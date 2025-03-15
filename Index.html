@@ -1,0 +1,1082 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Change Champions: Corporate Turnaround</title>
+    <style>
+        :root {
+            --primary: #3498db;
+            --secondary: #2ecc71;
+            --danger: #e74c3c;
+            --warning: #f39c12;
+            --dark: #2c3e50;
+            --light: #ecf0f1;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .game-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: white;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--primary);
+        }
+        
+        .header h1 {
+            color: var(--dark);
+        }
+        
+        .header p {
+            color: #666;
+        }
+        
+        .game-interface {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .dashboard {
+            display: flex;
+            justify-content: space-between;
+            background-color: var(--light);
+            padding: 15px;
+            border-radius: 5px;
+        }
+        
+        .stats {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .stat {
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+        }
+        
+        .morale .stat-value {
+            color: var(--secondary);
+        }
+        
+        .resistance .stat-value {
+            color: var(--danger);
+        }
+        
+        .progress .stat-value {
+            color: var(--primary);
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        .step-indicator {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+            margin-bottom: 20px;
+            position: relative;
+        }
+        
+        .step-indicator::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background-color: #ddd;
+            transform: translateY(-50%);
+            z-index: 1;
+        }
+        
+        .step {
+            width: 30px;
+            height: 30px;
+            background-color: #ddd;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            z-index: 2;
+            cursor: pointer;
+        }
+        
+        .step.active {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .step.completed {
+            background-color: var(--secondary);
+            color: white;
+        }
+        
+        .step-tooltip {
+            position: absolute;
+            bottom: 35px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: var(--dark);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.75rem;
+            white-space: nowrap;
+            display: none;
+        }
+        
+        .step:hover .step-tooltip {
+            display: block;
+        }
+        
+        .scenario-container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .scenario-title {
+            font-size: 1.5rem;
+            color: var(--dark);
+            margin-bottom: 10px;
+        }
+        
+        .scenario-description {
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+        
+        .options {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+        }
+        
+        .option {
+            background-color: var(--light);
+            padding: 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .option:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            background-color: #e3e8eb;
+        }
+        
+        .feedback {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            display: none;
+        }
+        
+        .feedback.positive {
+            background-color: rgba(46, 204, 113, 0.2);
+            border-left: 4px solid var(--secondary);
+        }
+        
+        .feedback.negative {
+            background-color: rgba(231, 76, 60, 0.2);
+            border-left: 4px solid var(--danger);
+        }
+        
+        .feedback.neutral {
+            background-color: rgba(52, 152, 219, 0.2);
+            border-left: 4px solid var(--primary);
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.2s;
+        }
+        
+        .btn:hover {
+            background-color: #2980b9;
+        }
+        
+        .btn-next {
+            margin-top: 20px;
+            display: none;
+        }
+        
+        .info-panel {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        
+        .info-panel h3 {
+            margin-bottom: 10px;
+            color: var(--dark);
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .intro-screen, .results-screen {
+            text-align: center;
+            padding: 30px;
+        }
+        
+        .intro-screen h2, .results-screen h2 {
+            color: var(--dark);
+            margin-bottom: 20px;
+        }
+        
+        .intro-screen p, .results-screen p {
+            margin-bottom: 15px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .btn-start {
+            margin-top: 20px;
+            background-color: var(--secondary);
+        }
+        
+        .btn-start:hover {
+            background-color: #27ae60;
+        }
+        
+        .results-details {
+            margin-top: 20px;
+            text-align: left;
+            background-color: var(--light);
+            padding: 20px;
+            border-radius: 5px;
+        }
+        
+        .star-rating {
+            font-size: 2rem;
+            margin: 20px 0;
+            color: #f39c12;
+        }
+        
+        @media (max-width: 768px) {
+            .game-container {
+                padding: 15px;
+                margin: 10px;
+            }
+            
+            .dashboard {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .stats {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .step-indicator {
+                overflow-x: auto;
+                padding-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="header">
+            <h1>Change Champions: Corporate Turnaround</h1>
+            <p>Guide your organization through Kotter's 8-Step Change Model</p>
+        </div>
+        
+        <div id="intro-screen" class="intro-screen">
+            <h2>Welcome to Change Champions!</h2>
+            <p>You've been appointed as the Change Manager for TechGrowth Inc., a technology company facing significant challenges due to market disruption and changing customer needs.</p>
+            <p>Your mission is to lead the organization through a successful transformation using Kotter's 8-Step Change Model:</p>
+            <div style="text-align: left; max-width: 600px; margin: 0 auto;">
+                <ol>
+                    <li><strong>Create a Sense of Urgency</strong></li>
+                    <li><strong>Build a Guiding Coalition</strong></li>
+                    <li><strong>Form a Strategic Vision</strong></li>
+                    <li><strong>Enlist a Volunteer Army</strong></li>
+                    <li><strong>Enable Action by Removing Barriers</strong></li>
+                    <li><strong>Generate Short-Term Wins</strong></li>
+                    <li><strong>Sustain Acceleration</strong></li>
+                    <li><strong>Institute Change</strong></li>
+                </ol>
+            </div>
+            <p>Navigate through challenging scenarios, make decisions, and see the consequences of your actions in real-time. Your goal is to implement lasting change while maintaining team morale and minimizing resistance.</p>
+            <button id="btn-start" class="btn btn-start">Start Your Change Journey</button>
+        </div>
+        
+        <div id="game-interface" class="game-interface hidden">
+            <div class="dashboard">
+                <div class="stats">
+                    <div class="stat morale">
+                        <div class="stat-value" id="morale-value">75</div>
+                        <div class="stat-label">Team Morale</div>
+                    </div>
+                    <div class="stat resistance">
+                        <div class="stat-value" id="resistance-value">40</div>
+                        <div class="stat-label">Resistance</div>
+                    </div>
+                    <div class="stat progress">
+                        <div class="stat-value" id="progress-value">0</div>
+                        <div class="stat-label">Change Progress</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="step-indicator">
+                <div class="step" id="step-1" data-step="1">
+                    1
+                    <span class="step-tooltip">Create Urgency</span>
+                </div>
+                <div class="step" id="step-2" data-step="2">
+                    2
+                    <span class="step-tooltip">Build Coalition</span>
+                </div>
+                <div class="step" id="step-3" data-step="3">
+                    3
+                    <span class="step-tooltip">Form Vision</span>
+                </div>
+                <div class="step" id="step-4" data-step="4">
+                    4
+                    <span class="step-tooltip">Enlist Volunteers</span>
+                </div>
+                <div class="step" id="step-5" data-step="5">
+                    5
+                    <span class="step-tooltip">Remove Barriers</span>
+                </div>
+                <div class="step" id="step-6" data-step="6">
+                    6
+                    <span class="step-tooltip">Short-Term Wins</span>
+                </div>
+                <div class="step" id="step-7" data-step="7">
+                    7
+                    <span class="step-tooltip">Sustain Acceleration</span>
+                </div>
+                <div class="step" id="step-8" data-step="8">
+                    8
+                    <span class="step-tooltip">Institute Change</span>
+                </div>
+            </div>
+            
+            <div class="scenario-container">
+                <h3 class="scenario-title" id="scenario-title">Step 1: Create a Sense of Urgency</h3>
+                <p class="scenario-description" id="scenario-description">TechGrowth Inc. is losing market share to more agile competitors. The company's traditional products are becoming obsolete, but many employees don't see the need for change. As the Change Manager, your first task is to create a sense of urgency.</p>
+                
+                <div class="options" id="options-container">
+                    <!-- Options will be dynamically inserted here -->
+                </div>
+                
+                <div class="feedback" id="feedback-container">
+                    <!-- Feedback will be dynamically inserted here -->
+                </div>
+                
+                <button class="btn btn-next" id="btn-next">Next Step</button>
+            </div>
+            
+            <div class="info-panel">
+                <h3>Kotter's Step 1: Create a Sense of Urgency</h3>
+                <p id="info-text">Help others see the need for change through a bold, aspirational opportunity statement that communicates the importance of acting immediately. This creates the initial momentum and urgency required to get the change effort started.</p>
+            </div>
+        </div>
+        
+        <div id="results-screen" class="results-screen hidden">
+            <h2>Change Implementation Complete!</h2>
+            <p>Congratulations on completing your change management journey with TechGrowth Inc.</p>
+            <div class="star-rating" id="star-rating">★★★★☆</div>
+            <div class="results-details">
+                <h3>Your Performance Summary:</h3>
+                <p><strong>Final Team Morale:</strong> <span id="final-morale">75</span>/100</p>
+                <p><strong>Final Resistance Level:</strong> <span id="final-resistance">25</span>/100</p>
+                <p><strong>Change Implementation:</strong> <span id="final-progress">85</span>%</p>
+                <h3>Strengths:</h3>
+                <ul id="strengths-list">
+                    <!-- Will be dynamically populated -->
+                </ul>
+                <h3>Areas for Improvement:</h3>
+                <ul id="improvements-list">
+                    <!-- Will be dynamically populated -->
+                </ul>
+                <h3>Key Learnings:</h3>
+                <p>Throughout this simulation, you've experienced how Kotter's 8-Step Change Model provides a structured approach to organizational transformation. Remember that successful change requires attention to both the technical aspects and the human elements of change.</p>
+            </div>
+            <button id="btn-restart" class="btn">Restart Simulation</button>
+        </div>
+    </div>
+
+    <script>
+        // Game state
+        const gameState = {
+            currentStep: 1,
+            morale: 75,
+            resistance: 40,
+            progress: 0,
+            completedSteps: [],
+            decisions: [],
+            strengthAreas: [],
+            improvementAreas: []
+        };
+
+        // Game scenarios data structure
+        const scenarios = [
+            {
+                step: 1,
+                title: "Step 1: Create a Sense of Urgency",
+                description: "TechGrowth Inc. is losing market share to more agile competitors. The company's traditional products are becoming obsolete, but many employees don't see the need for change. As the Change Manager, your first task is to create a sense of urgency.",
+                infoText: "Help others see the need for change through a bold, aspirational opportunity statement that communicates the importance of acting immediately. This creates the initial momentum and urgency required to get the change effort started.",
+                options: [
+                    {
+                        text: "Share detailed market research and competitor analysis with all employees, highlighting the company's declining position.",
+                        feedback: "Good choice! By sharing concrete data, you've helped employees understand the reality of the situation. This evidence-based approach creates genuine urgency rather than false urgency based on fear. The team appreciates your transparency.",
+                        effects: { morale: +5, resistance: -10, progress: +15 },
+                        quality: "positive",
+                        strength: "Using data to create genuine urgency"
+                    },
+                    {
+                        text: "Announce potential layoffs if the company doesn't change direction quickly, creating fear-based motivation.",
+                        feedback: "This approach created urgency, but it's based on fear rather than aspiration. While some employees now recognize the need for change, the fear of job loss has decreased morale and increased anxiety. This could make your change efforts more difficult moving forward.",
+                        effects: { morale: -15, resistance: +10, progress: +5 },
+                        quality: "negative",
+                        improvement: "Creating positive urgency rather than fear-based urgency"
+                    },
+                    {
+                        text: "Have one-on-one conversations with key influencers, then gradually expand discussions to larger groups.",
+                        feedback: "A thoughtful approach! By starting with key influencers, you've built a foundation of understanding among people whose opinions matter to others. The gradual expansion helps create authentic urgency while allowing people time to process the need for change.",
+                        effects: { morale: +10, resistance: -5, progress: +10 },
+                        quality: "positive",
+                        strength: "Building momentum through influencers"
+                    },
+                    {
+                        text: "Wait for quarterly results to worsen before taking action, as this will naturally create urgency.",
+                        feedback: "Waiting for further decline is a missed opportunity. By the time the situation worsens, you'll be starting from a more difficult position with fewer resources and options. Proactive urgency creation is a key part of successful change management.",
+                        effects: { morale: -5, resistance: +5, progress: -5 },
+                        quality: "negative",
+                        improvement: "Taking proactive rather than reactive action"
+                    }
+                ]
+            },
+            {
+                step: 2,
+                title: "Step 2: Build a Guiding Coalition",
+                description: "Now that there's growing awareness of the need for change, you need to assemble a group with enough power and influence to lead the change effort. This coalition needs to work as a team outside the normal hierarchy.",
+                infoText: "Assemble a group with enough power, influence, expertise, and leadership skills to guide the change initiative. This diverse coalition should represent different departments, levels, and perspectives within the organization.",
+                options: [
+                    {
+                        text: "Select only senior executives who have formal authority to make decisions quickly.",
+                        feedback: "While senior executives bring authority, this coalition lacks diversity of perspective and may not understand front-line realities. Change efforts often require buy-in at all levels, and without representatives from different areas, you may miss important insights and encounter implementation challenges.",
+                        effects: { morale: -5, resistance: +5, progress: +5 },
+                        quality: "negative",
+                        improvement: "Building diverse coalitions with multiple perspectives"
+                    },
+                    {
+                        text: "Create a coalition of respected leaders from various departments and levels, including informal influencers.",
+                        feedback: "Excellent choice! Your diverse coalition brings multiple perspectives and represents various parts of the organization. By including both formal and informal leaders, you've created a powerful change engine with credibility throughout the organization.",
+                        effects: { morale: +10, resistance: -10, progress: +15 },
+                        quality: "positive",
+                        strength: "Creating a diverse, cross-functional coalition"
+                    },
+                    {
+                        text: "Appoint only change enthusiasts who already support the transformation, ensuring quick alignment.",
+                        feedback: "While a team of enthusiasts will be aligned, you're missing the insights of skeptics who might identify legitimate concerns. Additionally, without representation from all key departments, some areas may feel excluded from the process, leading to resistance.",
+                        effects: { morale: 0, resistance: +10, progress: +5 },
+                        quality: "negative",
+                        improvement: "Including constructive skeptics in change planning"
+                    },
+                    {
+                        text: "Build a small coalition of technical experts who understand the market challenges in depth.",
+                        feedback: "Technical expertise is valuable, but change leadership requires more than just market knowledge. Your coalition needs people with emotional intelligence, organizational influence, and leadership capabilities to guide others through the transformation process.",
+                        effects: { morale: -5, resistance: 0, progress: +5 },
+                        quality: "neutral",
+                        improvement: "Balancing technical expertise with leadership skills"
+                    }
+                ]
+            },
+            {
+                step: 3,
+                title: "Step 3: Form a Strategic Vision",
+                description: "Your coalition now needs to create a clear vision to help direct the change effort and develop strategic initiatives to achieve that vision.",
+                infoText: "Clarify how the future will be different from the past, and how you can make that future a reality. The vision serves as a north star for the change effort, guiding decision-making and inspiring action.",
+                options: [
+                    {
+                        text: "Develop a detailed 50-page strategic plan with comprehensive analysis and technical specifications.",
+                        feedback: "While thorough, a lengthy document is unlikely to be read or remembered by most employees. An effective change vision should be clear, concise, and compelling enough to be easily communicated and understood.",
+                        effects: { morale: -5, resistance: +5, progress: +5 },
+                        quality: "negative",
+                        improvement: "Creating concise, memorable visions"
+                    },
+                    {
+                        text: "Create a concise, memorable vision focused on becoming an agile, customer-centric technology provider.",
+                        feedback: "Well done! Your vision is clear, concise, and focused on the future state. It's easy to communicate and gives employees a compelling direction without being overly prescriptive about the path to get there.",
+                        effects: { morale: +10, resistance: -5, progress: +15 },
+                        quality: "positive",
+                        strength: "Developing a clear, aspirational vision"
+                    },
+                    {
+                        text: "Focus on immediate tactical changes without developing a broader vision, allowing for maximum flexibility.",
+                        feedback: "Without a clear vision, tactical changes may seem disconnected or arbitrary. Employees need to understand the bigger picture of where the organization is headed to make sense of the specific changes being implemented.",
+                        effects: { morale: -10, resistance: +10, progress: 0 },
+                        quality: "negative",
+                        improvement: "Linking tactical actions to strategic vision"
+                    },
+                    {
+                        text: "Have the coalition develop multiple possible vision statements and put them to a company-wide vote.",
+                        feedback: "While inclusive, this approach risks creating a watered-down vision trying to please everyone. The coalition's role is to provide clear direction, not to delegate the vision creation. The participatory process has increased engagement but created some confusion about priorities.",
+                        effects: { morale: +5, resistance: -5, progress: +5 },
+                        quality: "neutral",
+                        improvement: "Balancing participation with clear leadership direction"
+                    }
+                ]
+            },
+            {
+                step: 4,
+                title: "Step 4: Enlist a Volunteer Army",
+                description: "A large-scale change can only occur when a significant portion of employees actively support it. Your task is to communicate the vision and strategies to create buy-in and recruit volunteers to drive the change.",
+                infoText: "Large-scale change can only occur when many people rally around a common opportunity and drive in the same direction. Communicate the vision clearly and often, embed it in all activities, and ensure leadership models the desired behaviors.",
+                options: [
+                    {
+                        text: "Send a company-wide email announcing the vision and requesting support from all employees.",
+                        feedback: "A single email is insufficient for enlisting support. The vision needs to be communicated consistently through multiple channels, with opportunities for dialogue and engagement. This minimal approach has done little to build your volunteer army.",
+                        effects: { morale: 0, resistance: +5, progress: 0 },
+                        quality: "negative",
+                        improvement: "Using diverse, interactive communication channels"
+                    },
+                    {
+                        text: "Launch a comprehensive communication campaign with town halls, team discussions, and regular updates across multiple channels.",
+                        feedback: "Excellent approach! By using multiple communication channels and creating dialogue opportunities, you've reached employees in different ways and allowed them to engage with the vision. The consistent messaging is building support and understanding.",
+                        effects: { morale: +10, resistance: -10, progress: +15 },
+                        quality: "positive",
+                        strength: "Implementing multi-channel communication"
+                    },
+                    {
+                        text: "Mandate that all departments assign team members to change implementation teams, ensuring full representation.",
+                        feedback: "Forced participation contradicts the concept of a volunteer army. While you've ensured representation from all departments, the mandatory approach has created resentment among some participants who feel coerced rather than inspired.",
+                        effects: { morale: -10, resistance: +10, progress: +5 },
+                        quality: "negative",
+                        improvement: "Inspiring voluntary participation rather than mandating involvement"
+                    },
+                    {
+                        text: "Create opportunities for employees to share their ideas about implementing the vision, and publicly recognize those who contribute.",
+                        feedback: "Good approach! By creating participation opportunities and recognizing contributions, you've made employees feel valued and included in the process. This has encouraged voluntary engagement and helped identify unexpected champions for the change.",
+                        effects: { morale: +15, resistance: -5, progress: +10 },
+                        quality: "positive",
+                        strength: "Creating meaningful participation opportunities"
+                    }
+                ]
+            },
+            {
+                step: 5,
+                title: "Step 5: Enable Action by Removing Barriers",
+                description: "Even with vision and support, barriers can inhibit change. These might include inefficient processes, hierarchical structures, or skills gaps. Your task is to identify and remove these obstacles.",
+                infoText: "Remove obstacles to change, change systems that undermine the vision, and encourage risk-taking and nontraditional ideas and actions. By removing barriers, you empower people to execute the vision.",
+                options: [
+                    {
+                        text: "Focus on revising HR systems and performance metrics to align with the new vision.",
+                        feedback: "Good thinking! By aligning HR systems and metrics with the new vision, you're ensuring that employees are rewarded for behaviors that support the change. This structural approach removes significant systemic barriers to implementation.",
+                        effects: { morale: +5, resistance: -10, progress: +10 },
+                        quality: "positive",
+                        strength: "Aligning systems and incentives with change goals"
+                    },
+                    {
+                        text: "Tell managers to address barriers within their own teams without providing additional resources or support.",
+                        feedback: "Without specific support or resources, managers may struggle to address barriers effectively. This approach places burden on middle managers without empowering them, potentially creating frustration and inconsistent results across the organization.",
+                        effects: { morale: -10, resistance: +5, progress: 0 },
+                        quality: "negative",
+                        improvement: "Providing resources and support for barrier removal"
+                    },
+                    {
+                        text: "Provide targeted training to address skills gaps that prevent employees from implementing new approaches.",
+                        feedback: "Excellent choice! By addressing skills gaps directly, you're removing a major barrier to implementation. Employees feel supported in developing new capabilities, which increases confidence and reduces resistance based on fear of incompetence.",
+                        effects: { morale: +15, resistance: -15, progress: +15 },
+                        quality: "positive",
+                        strength: "Addressing skills gaps through targeted training"
+                    },
+                    {
+                        text: "Restructure departments and reporting relationships to better support the new direction.",
+                        feedback: "While structural changes may eventually be necessary, starting with reorganization before addressing other barriers can create anxiety and disruption. The structural focus has created some implementation efficiencies but also increased uncertainty and resistance.",
+                        effects: { morale: -5, resistance: +10, progress: +5 },
+                        quality: "neutral",
+                        improvement: "Addressing human barriers before structural ones"
+                    }
+                ]
+            },
+            {
+                step: 6,
+                title: "Step 6: Generate Short-Term Wins",
+                description: "Major change takes time, and transformation efforts risk losing momentum if there are no short-term wins. Your task is to plan for and create visible performance improvements to energize change supporters.",
+                infoText: "Create visible, unambiguous short-term wins that give the change effort momentum. Celebrating these wins provides emotional rewards, reinforces the vision, and keeps urgency levels high.",
+                options: [
+                    {
+                        text: "Focus exclusively on long-term goals, explaining that meaningful results take time and patience.",
+                        feedback: "Without short-term wins, people may lose faith in the change initiative. By focusing only on distant outcomes, you've missed opportunities to build momentum and reward progress, leading to fatigue and skepticism.",
+                        effects: { morale: -15, resistance: +15, progress: -5 },
+                        quality: "negative",
+                        improvement: "Balancing long-term goals with short-term victories"
+                    },
+                    {
+                        text: "Identify quick, achievable projects that demonstrate the benefits of the new approach and publicly celebrate their completion.",
+                        feedback: "Excellent strategy! By planning for and celebrating visible wins, you've provided evidence that the change efforts are yielding results. These successes have energized the team, silenced critics, and built momentum for continued transformation.",
+                        effects: { morale: +15, resistance: -15, progress: +15 },
+                        quality: "positive",
+                        strength: "Planning and celebrating meaningful quick wins"
+                    },
+                    {
+                        text: "Artificially create the appearance of success by lowering targets or redefining metrics to show improvement.",
+                        feedback: "Manipulating metrics undermines credibility and trust. While it may create the illusion of progress in the short term, employees will likely see through these tactics, leading to cynicism and decreased buy-in for the change effort.",
+                        effects: { morale: -20, resistance: +20, progress: -10 },
+                        quality: "negative",
+                        improvement: "Maintaining integrity through honest progress measurement"
+                    },
+                    {
+                        text: "Implement a customer feedback system that quickly identifies and addresses pain points, showing immediate service improvements.",
+                        feedback: "Good approach! By focusing on customer experience improvements, you've created visible wins that matter to the business. The direct feedback loop has allowed for rapid adjustments and demonstrated the value of the new, more responsive approach.",
+                        effects: { morale: +10, resistance: -10, progress: +10 },
+                        quality: "positive",
+                        strength: "Connecting wins to customer value"
+                    }
+                ]
+            },
+            {
+                step: 7,
+                title: "Step 7: Sustain Acceleration",
+                description: "After early wins, many change efforts fail because victory is declared too early. Your challenge is to use increased credibility from early wins to accelerate change by tackling larger projects.",
+                infoText: "Use increasing credibility to change systems, structures, and policies that don't align with the vision. Hire and promote employees who can implement the vision, and reinvigorate the process with new projects and themes.",
+                options: [
+                    {
+                        text: "Celebrate success and reduce the intensity of the change effort to give employees a break.",
+                        feedback: "Easing up now risks losing momentum. While it's important to acknowledge progress, declaring victory too soon can lead to regression as the urgency dissipates and old habits return. The change needs continued focus to become permanent.",
+                        effects: { morale: +5, resistance: +10, progress: -10 },
+                        quality: "negative",
+                        improvement: "Maintaining momentum through the entire change process"
+                    },
+                    {
+                        text: "Use credibility from early wins to launch more ambitious change projects, bringing in fresh change agents as needed.",
+                        feedback: "Excellent decision! By building on early successes to tackle larger issues, you're maintaining momentum while deepening the change. The introduction of fresh perspectives helps combat fatigue and brings new energy to the transformation process.",
+                        effects: { morale: +10, resistance: -10, progress: +15 },
+                        quality: "positive",
+                        strength: "Building on success with increasingly ambitious goals"
+                    },
+                    {
+                        text: "Promote the most enthusiastic change supporters to management positions to consolidate control of the initiative.",
+                        feedback: "While enthusiasm is valuable, leadership roles should be filled based on both commitment to change and competence. Some promotions appear to reward loyalty rather than capability, creating resentment and potentially placing people in roles beyond their skills.",
+                        effects: { morale: -10, resistance: +5, progress: +5 },
+                        quality: "negative", 
+                        improvement: "Balancing change commitment with leadership capability"
+                    },
+                    {
+                        text: "Analyze what's working and what isn't, then adjust the change approach based on these learnings.",
+                        feedback: "Good approach to continuous improvement! By analyzing results and adapting accordingly, you're demonstrating a learning mindset that helps refine the change process. This reflective approach builds credibility and improves the effectiveness of your efforts.",
+                        effects: { morale: +5, resistance: -5, progress: +10 },
+                        quality: "positive",
+                        strength: "Using continuous learning to refine change approach"
+                    }
+                ]
+            },
+            {
+                step: 8,
+                title: "Step 8: Institute Change",
+                description: "Finally, to ensure long-term success, the changes must become embedded in the company culture. Your challenge is to anchor the new approaches in the organizational culture.",
+                infoText: "Articulate the connections between the new behaviors and organizational success, and develop means to ensure leadership development and succession support the new ways of working. Reinforcing the change in culture ensures its sustainability.",
+                options: [
+                    {
+                        text: "Document the new processes in the company handbook and consider the change complete.",
+                        feedback: "Documentation alone won't change culture. True culture change requires ongoing reinforcement, leadership modeling, and connection to organizational success. Without these elements, employees may revert to old behaviors despite the updated handbook.",
+                        effects: { morale: -5, resistance: +5, progress: 0 },
+                        quality: "negative",
+                        improvement: "Focusing on cultural reinforcement beyond documentation"
+                    },
+                    {
+                        text: "Integrate change-related criteria into hiring and promotion decisions to ensure cultural alignment over time.",
+                        feedback: "Excellent approach! By embedding the new values and behaviors into HR systems, you're ensuring that the organization will continue to select and advance people who align with the new culture, reinforcing the changes for the long term.",
+                        effects: { morale: +10, resistance: -5, progress: +10 },
+                        quality: "positive",
+                        strength: "Embedding change in talent management systems"
+                    },
+                    {
+                        text: "Tell stories that connect the change effort to organizational success, highlighting the new behaviors that led to positive outcomes.",
+                        feedback: "Great strategy! Storytelling is a powerful way to reinforce culture. By creating narratives that link new behaviors to success, you've made the change meaningful and memorable, helping to embed it in the organizational identity.",
+                        effects: { morale: +15, resistance: -10, progress: +15 },
+                        quality: "positive",
+                        strength: "Using storytelling to reinforce cultural change"
+                    },
+                    {
+                        text: "Move on to the next change initiative, trusting that the implemented changes will sustain themselves.",
+                        feedback: "Without continued attention, the changes may erode over time. By shifting focus too quickly, you risk allowing old habits to resurface, especially when facing new challenges or when key change champions leave the organization.",
+                        effects: { morale: -10, resistance: +10, progress: -5 },
+                        quality: "negative",
+                        improvement: "Providing ongoing reinforcement until changes are solidified"
+                    }
+                ]
+            }
+        ];
+
+        // DOM Elements
+        const introScreen = document.getElementById('intro-screen');
+        const gameInterface = document.getElementById('game-interface');
+        const resultsScreen = document.getElementById('results-screen');
+        const btnStart = document.getElementById('btn-start');
+        const btnNext = document.getElementById('btn-next');
+        const btnRestart = document.getElementById('btn-restart');
+        const moraleValue = document.getElementById('morale-value');
+        const resistanceValue = document.getElementById('resistance-value');
+        const progressValue = document.getElementById('progress-value');
+        const scenarioTitle = document.getElementById('scenario-title');
+        const scenarioDescription = document.getElementById('scenario-description');
+        const optionsContainer = document.getElementById('options-container');
+        const feedbackContainer = document.getElementById('feedback-container');
+        const infoText = document.getElementById('info-text');
+        const finalMorale = document.getElementById('final-morale');
+        const finalResistance = document.getElementById('final-resistance');
+        const finalProgress = document.getElementById('final-progress');
+        const strengthsList = document.getElementById('strengths-list');
+        const improvementsList = document.getElementById('improvements-list');
+        const starRating = document.getElementById('star-rating');
+
+        // Event Listeners
+        btnStart.addEventListener('click', startGame);
+        btnNext.addEventListener('click', goToNextStep);
+        btnRestart.addEventListener('click', restartGame);
+
+        // Initialize steps
+        function initializeSteps() {
+            const steps = document.querySelectorAll('.step');
+            steps.forEach(step => {
+                step.addEventListener('click', (e) => {
+                    const stepNum = parseInt(e.target.dataset.step);
+                    if (gameState.completedSteps.includes(stepNum)) {
+                        // Review completed step
+                        showStepDetails(stepNum);
+                    }
+                });
+            });
+        }
+
+        // Initialize game
+        function initializeGame() {
+            updateStats();
+            initializeSteps();
+        }
+
+        // Start game
+        function startGame() {
+            introScreen.classList.add('hidden');
+            gameInterface.classList.remove('hidden');
+            loadScenario(1);
+            updateStepIndicator();
+        }
+
+        // Load scenario for current step
+        function loadScenario(stepNumber) {
+            const scenario = scenarios.find(s => s.step === stepNumber);
+            
+            if (scenario) {
+                scenarioTitle.textContent = scenario.title;
+                scenarioDescription.textContent = scenario.description;
+                infoText.textContent = scenario.infoText;
+                
+                // Clear previous options
+                optionsContainer.innerHTML = '';
+                
+                // Add new options
+                scenario.options.forEach((option, index) => {
+                    const optionElement = document.createElement('div');
+                    optionElement.className = 'option';
+                    optionElement.textContent = option.text;
+                    optionElement.dataset.index = index;
+                    optionElement.addEventListener('click', () => selectOption(stepNumber, index));
+                    optionsContainer.appendChild(optionElement);
+                });
+                
+                // Hide feedback and next button
+                feedbackContainer.style.display = 'none';
+                btnNext.style.display = 'none';
+            }
+        }
+
+        // Select option
+        function selectOption(stepNumber, optionIndex) {
+            const scenario = scenarios.find(s => s.step === stepNumber);
+            const selectedOption = scenario.options[optionIndex];
+            
+            // Update game state
+            gameState.morale += selectedOption.effects.morale;
+            gameState.resistance += selectedOption.effects.resistance;
+            gameState.progress += selectedOption.effects.progress;
+            
+            // Ensure values stay within bounds
+            gameState.morale = Math.max(0, Math.min(100, gameState.morale));
+            gameState.resistance = Math.max(0, Math.min(100, gameState.resistance));
+            gameState.progress = Math.max(0, Math.min(100, gameState.progress));
+            
+            // Update display
+            updateStats();
+            
+            // Show feedback
+            feedbackContainer.textContent = selectedOption.feedback;
+            feedbackContainer.className = `feedback ${selectedOption.quality}`;
+            feedbackContainer.style.display = 'block';
+            
+            // Track decision
+            gameState.decisions.push({
+                step: stepNumber,
+                option: optionIndex,
+                effects: selectedOption.effects,
+                quality: selectedOption.quality
+            });
+            
+            // Track learning areas
+            if (selectedOption.quality === 'positive' && selectedOption.strength) {
+                if (!gameState.strengthAreas.includes(selectedOption.strength)) {
+                    gameState.strengthAreas.push(selectedOption.strength);
+                }
+            }
+            if (selectedOption.quality === 'negative' && selectedOption.improvement) {
+                if (!gameState.improvementAreas.includes(selectedOption.improvement)) {
+                    gameState.improvementAreas.push(selectedOption.improvement);
+                }
+            }
+            
+            // Disable all options
+            const options = document.querySelectorAll('.option');
+            options.forEach(option => {
+                option.style.pointerEvents = 'none';
+                option.style.opacity = '0.7';
+                
+                // Highlight selected option
+                if (parseInt(option.dataset.index) === optionIndex) {
+                    if (selectedOption.quality === 'positive') {
+                        option.style.backgroundColor = 'rgba(46, 204, 113, 0.2)';
+                        option.style.borderLeft = '4px solid #2ecc71';
+                    } else if (selectedOption.quality === 'negative') {
+                        option.style.backgroundColor = 'rgba(231, 76, 60, 0.2)';
+                        option.style.borderLeft = '4px solid #e74c3c';
+                    } else {
+                        option.style.backgroundColor = 'rgba(52, 152, 219, 0.2)';
+                        option.style.borderLeft = '4px solid #3498db';
+                    }
+                }
+            });
+            
+            // Show next button
+            btnNext.style.display = 'block';
+            
+            // If not already completed, mark step as completed
+            if (!gameState.completedSteps.includes(stepNumber)) {
+                gameState.completedSteps.push(stepNumber);
+            }
+            
+            // Update step indicator
+            updateStepIndicator();
+        }
+
+        // Go to next step
+        function goToNextStep() {
+            const nextStep = gameState.currentStep + 1;
+            
+            if (nextStep <= 8) {
+                gameState.currentStep = nextStep;
+                loadScenario(nextStep);
+                updateStepIndicator();
+                // Scroll to top of scenario
+                document.querySelector('.scenario-container').scrollIntoView({ behavior: 'smooth' });
+            } else {
+                // Game completed
+                showResults();
+            }
+        }
+
+        // Update step indicator
+        function updateStepIndicator() {
+            const steps = document.querySelectorAll('.step');
+            
+            steps.forEach(step => {
+                const stepNum = parseInt(step.dataset.step);
+                
+                // Remove all classes first
+                step.classList.remove('active', 'completed');
+                
+                // Add appropriate class
+                if (stepNum === gameState.currentStep) {
+                    step.classList.add('active');
+                } else if (gameState.completedSteps.includes(stepNum)) {
+                    step.classList.add('completed');
+                }
+            });
+        }
+
+        // Update stats display
+        function updateStats() {
+            moraleValue.textContent = gameState.morale;
+            resistanceValue.textContent = gameState.resistance;
+            progressValue.textContent = gameState.progress;
+        }
+
+        // Show step details (for reviewing completed steps)
+        function showStepDetails(stepNumber) {
+            if (gameState.completedSteps.includes(stepNumber)) {
+                // Only allow viewing completed steps
+                gameState.currentStep = stepNumber;
+                loadScenario(stepNumber);
+                updateStepIndicator();
+                
+                // Find the decision made for this step
+                const decision = gameState.decisions.find(d => d.step === stepNumber);
+                
+                if (decision) {
+                    // Simulate selecting the same option again (without changing game state)
+                    const options = document.querySelectorAll('.option');
+                    options.forEach(option => {
+                        option.style.pointerEvents = 'none';
+                        option.style.opacity = '0.7';
+                        
+                        // Highlight selected option
+                        if (parseInt(option.dataset.index) === decision.option) {
+                            if (decision.quality === 'positive') {
+                                option.style.backgroundColor = 'rgba(46, 204, 113, 0.2)';
+                                option.style.borderLeft = '4px solid #2ecc71';
+                            } else if (decision.quality === 'negative') {
+                                option.style.backgroundColor = 'rgba(231, 76, 60, 0.2)';
+                                option.style.borderLeft = '4px solid #e74c3c';
+                            } else {
+                                option.style.backgroundColor = 'rgba(52, 152, 219, 0.2)';
+                                option.style.borderLeft = '4px solid #3498db';
+                            }
+                        }
+                    });
+                    
+                    // Show feedback
+                    const scenario = scenarios.find(s => s.step === stepNumber);
+                    feedbackContainer.textContent = scenario.options[decision.option].feedback;
+                    feedbackContainer.className = `feedback ${decision.quality}`;
+                    feedbackContainer.style.display = 'block';
+                    
+                    // Show next button only if not the final completed step
+                    if (stepNumber === Math.max(...gameState.completedSteps)) {
+                        btnNext.style.display = 'block';
+                    } else {
+                        btnNext.style.display = 'none';
+                    }
+                }
+            }
+        }
+
+        // Show results screen
+        function showResults() {
+            gameInterface.classList.add('hidden');
+            resultsScreen.classList.remove('hidden');
+            
+            // Update final stats
+            finalMorale.textContent = gameState.morale;
+            finalResistance.textContent = gameState.resistance;
+            finalProgress.textContent = gameState.progress;
+            
+            // Calculate performance score
+            const performanceScore = (gameState.morale + (100 - gameState.resistance) + gameState.progress) / 3;
+            
+            // Set star rating
+            if (performanceScore >= 85) {
+                starRating.textContent = '★★★★★';
+            } else if (performanceScore >= 70) {
+                starRating.textContent = '★★★★☆';
+            } else if (performanceScore >= 50) {
+                starRating.textContent = '★★★☆☆';
+            } else if (performanceScore >= 30) {
+                starRating.textContent = '★★☆☆☆';
+            } else {
+                starRating.textContent = '★☆☆☆☆';
+            }
+            
+            // Update strengths and improvements lists
+            strengthsList.innerHTML = '';
+            improvementsList.innerHTML = '';
+            
+            gameState.strengthAreas.forEach(strength => {
+                const li = document.createElement('li');
+                li.textContent = strength;
+                strengthsList.appendChild(li);
+            });
+            
+            gameState.improvementAreas.forEach(improvement => {
+                const li = document.createElement('li');
+                li.textContent = improvement;
+                improvementsList.appendChild(li);
+            });
+            
+            // If no strengths or improvements
+            if (gameState.strengthAreas.length === 0) {
+                const li = document.createElement('li');
+                li.textContent = 'No notable strengths identified in this playthrough.';
+                strengthsList.appendChild(li);
+            }
+            
+            if (gameState.improvementAreas.length === 0) {
+                const li = document.createElement('li');
+                li.textContent = 'No specific improvement areas identified in this playthrough.';
+                improvementsList.appendChild(li);
+            }
+        }
+
+        // Restart game
+        function restartGame() {
+            // Reset game state
+            gameState.currentStep = 1;
+            gameState.morale = 75;
+            gameState.resistance = 40;
+            gameState.progress = 0;
+            gameState.completedSteps = [];
+            gameState.decisions = [];
+            gameState.strengthAreas = [];
+            gameState.improvementAreas = [];
+            
+            // Update UI
+            updateStats();
+            updateStepIndicator();
+            
+            // Show intro screen
+            resultsScreen.classList.add('hidden');
+            introScreen.classList.remove('hidden');
+        }
+
+        // Initialize on load
+        window.addEventListener('load', initializeGame);
+    </script>
+</body>
+</html>
